@@ -15,7 +15,7 @@ enum ret_codes   {   up=0,    down=1,      halt=2,   top=3,   bottom=4, fail=5, 
 enum state_codes x = _idle;
 
 int target_floor_number = 8;
-int current_floor_number = 1;
+int current_floor_number = 2;
 int accumulated_floor_number = 0;
 #define TOP_FLOOR 9
 #define BOTTOM_FLOOR 1
@@ -41,14 +41,10 @@ int event_goingUp(void){
         return fail;
     else if(TOP_FLOOR == current_floor_number)
         return top;
-    else if(BOTTOM_FLOOR == current_floor_number)
-        return bottom;
     else if(current_floor_number < target_floor_number)
         return up;
     else if(current_floor_number == target_floor_number)
         return halt;
-    else
-        return quit;
 }
 int event_goingDown(void){
     current_floor_number -= 1;
@@ -57,16 +53,12 @@ int event_goingDown(void){
 
     if(accumulated_floor_number > 100)
         return fail;
-    else if(TOP_FLOOR == current_floor_number)
-        return top;
     else if(BOTTOM_FLOOR == current_floor_number)
         return bottom;
     else if(current_floor_number > target_floor_number)
         return down;
     else if(current_floor_number == target_floor_number)
         return halt;
-    else
-        return quit;
 }
 int event_atTop(void){
     printf("At top! current_floor_number= %d\n", current_floor_number);
@@ -77,6 +69,8 @@ int event_atTop(void){
         return down;
     else if(current_floor_number == target_floor_number)
         return halt;
+    else
+        return quit;
 }
 int event_atBottom(void){
     printf("At Bottom! current_floor_number= %d\n", current_floor_number);
@@ -86,7 +80,10 @@ int event_atBottom(void){
     if(current_floor_number < target_floor_number)
         return up;
     else if(current_floor_number == target_floor_number)
-        return halt;}
+        return halt;
+    else
+        return quit;
+}
 
 int event_malfunction(void){
     printf("Elevator needs maintanence!\n");
@@ -109,11 +106,11 @@ int (* event[])(void) = { event_idle, event_goingUp, event_goingDown, event_atTo
 int lookup_transitions[][7] = { 
                 // return codes:
                 //      up       down       halt          top         bottom         fail          quit
-    [_idle]      = {_goingUp,    _goingDown,  _idle,     _unexpected, _unexpected,  _malfunction,  _end},
-    [_goingUp]   = {_goingUp,    _unexpected, _idle,     _AtTop,      _AtBottom,    _malfunction,  _end},
-    [_goingDown] = {_unexpected, _goingDown,  _idle,     _AtTop,      _AtBottom,    _malfunction,  _end},
+    [_idle]      = {_goingUp,    _goingDown,  _idle,     _unexpected, _unexpected,  _unexpected,  _end},
+    [_goingUp]   = {_goingUp,    _unexpected, _idle,     _AtTop,      _unexpected,  _malfunction,  _end},
+    [_goingDown] = {_unexpected, _goingDown,  _idle,     _goingDown,  _AtBottom,    _malfunction,  _end},
     [_AtTop]     = {_unexpected, _goingDown,  _AtTop,    _unexpected, _unexpected,  _malfunction,  _end},
-    [_AtBottom]  = {_goingUp,    _goingDown,  _AtBottom, _unexpected, _unexpected,  _malfunction,  _end},
+    [_AtBottom]  = {_goingUp,    _unexpected, _AtBottom, _unexpected, _unexpected,  _malfunction,  _end},
     [_malfunction] = {_end, _end, _end, _end, _end, _end, _end},
     [_unexpected]  = {_end, _end, _end, _end, _end, _end, _end}
     /* transitions from end state aren't needed */
